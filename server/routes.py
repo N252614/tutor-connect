@@ -105,6 +105,7 @@ def update_tutor_profile(id):
 
     db.session.commit()
 
+    # return updated tutor profile
     return jsonify({
         "message": "Tutor profile updated",
         "profile": {
