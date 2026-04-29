@@ -174,3 +174,23 @@ def get_bookings():
         })
 
     return jsonify(result), 200
+
+ # delete booking (only student who created it)
+@routes_bp.route("/bookings/<int:id>", methods=["DELETE"])
+@jwt_required()
+def delete_booking(id):
+    user_id = get_jwt_identity()
+
+    booking = Booking.query.get(id)
+
+    if not booking:
+        return jsonify({"error": "Booking not found"}), 404
+
+    # only the student who created the booking can delete it
+    if booking.student_id != int(user_id):
+        return jsonify({"error": "Not authorized"}), 403
+
+    db.session.delete(booking)
+    db.session.commit()
+
+    return jsonify({"message": "Booking deleted"}), 200
