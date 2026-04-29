@@ -147,7 +147,19 @@ def create_booking():
     db.session.add(booking)
     db.session.commit()
 
-    return jsonify({"message": "Booking created"}), 201
+    return jsonify({
+    "message": "Booking created",
+    "booking": {
+        "id": booking.id,
+        "lesson_date": booking.lesson_date,
+        "status": booking.status,
+        "tutor": {
+            "id": booking.tutor.id,
+            "subject": booking.tutor.subject,
+            "location": booking.tutor.location
+        }
+    }
+}), 201
 
 
 # get bookings for current user (student)
@@ -175,6 +187,7 @@ def get_bookings():
 
     return jsonify(result), 200
 
+
  # delete booking (only student who created it)
 @routes_bp.route("/bookings/<int:id>", methods=["DELETE"])
 @jwt_required()
@@ -194,6 +207,7 @@ def delete_booking(id):
     db.session.commit()
 
     return jsonify({"message": "Booking deleted"}), 200
+
 
 # update booking (only owner)
 @routes_bp.route("/bookings/<int:id>", methods=["PATCH"])
@@ -218,4 +232,46 @@ def update_booking(id):
 
     db.session.commit()
 
-    return jsonify({"message": "Booking updated"}), 200
+    return jsonify({
+    "message": "Booking updated",
+    "booking": {
+        "id": booking.id,
+        "lesson_date": booking.lesson_date,
+        "status": booking.status,
+        "tutor": {
+            "id": booking.tutor.id,
+            "subject": booking.tutor.subject,
+            "location": booking.tutor.location
+        }
+    }
+}), 200
+
+
+# get bookings for current tutor
+@routes_bp.route("/tutor-bookings", methods=["GET"])
+@jwt_required()
+def get_tutor_bookings():
+    user_id = get_jwt_identity()
+
+    # find tutor profile for this user
+    tutor_profile = TutorProfile.query.filter_by(user_id=int(user_id)).first()
+
+    if not tutor_profile:
+        return jsonify({"error": "Tutor profile not found"}), 404
+
+    bookings = Booking.query.filter_by(tutor_id=tutor_profile.id).all()
+
+    result = []
+
+    for booking in bookings:
+        result.append({
+            "id": booking.id,
+            "lesson_date": booking.lesson_date,
+            "status": booking.status,
+            "student": {
+                "id": booking.student.id,
+                "username": booking.student.username
+            }
+        })
+
+    return jsonify(result), 200
