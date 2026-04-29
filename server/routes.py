@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, TutorProfile, User
+from models import db, TutorProfile, User, Booking
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # create blueprint for main routes
@@ -32,6 +32,7 @@ def create_tutor_profile():
 
     return jsonify({"message": "Tutor profile created"}), 201
 
+
 # get all tutor profiles
 @routes_bp.route("/tutors", methods=["GET"])
 def get_tutors():
@@ -54,6 +55,7 @@ def get_tutors():
 
     return jsonify(result), 200
 
+
 # delete tutor profile (only owner can delete)
 @routes_bp.route("/tutor-profile/<int:id>", methods=["DELETE"])
 @jwt_required()
@@ -73,6 +75,7 @@ def delete_tutor_profile(id):
     db.session.commit()
 
     return jsonify({"message": "Profile deleted"}), 200
+
 
 # update tutor profile (only owner can update)
 @routes_bp.route("/tutor-profile/<int:id>", methods=["PATCH"])
@@ -105,7 +108,6 @@ def update_tutor_profile(id):
 
     db.session.commit()
 
-    # return updated tutor profile
     return jsonify({
         "message": "Tutor profile updated",
         "profile": {
@@ -116,3 +118,104 @@ def update_tutor_profile(id):
             "bio": profile.bio
         }
     }), 200
+
+
+# create booking (only students)
+@routes_bp.route("/bookings", methods=["POST"])
+@jwt_required()
+def create_booking():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    user = User.query.get(int(user_id))
+
+    # only students can create bookings
+    if not user or user.role != "student":
+        return jsonify({"error": "Only students can create bookings"}), 403
+
+    tutor_profile = TutorProfile.query.get(data.get("tutor_id"))
+
+    if not tutor_profile:
+        return jsonify({"error": "Tutor not found"}), 404
+
+    booking = Booking(
+        lesson_date=data.get("lesson_date"),
+        student_id=user.id,
+        tutor_id=tutor_profile.id
+    )
+
+    db.session.add(booking)
+    db.session.commit()
+
+    return jsonify({"message": "Booking created"}), 201
+
+
+# get bookings for current user (student)
+@routes_bp.route("/bookings", methods=["GET"])
+@jwt_required()
+def get_bookings():
+    user_id = get_jwt_identity()
+
+    # get all bookings for this student
+    bookings = Booking.query.filter_by(student_id=int(user_id)).all()
+
+    result = []
+
+    for booking in bookings:
+        result.append({
+            "id": booking.id,
+            "lesson_date": booking.lesson_date,
+            "status": booking.status,
+            "tutor": {
+                "id": booking.tutor.id,
+                "subject": booking.tutor.subject,
+                "location": booking.tutor.location
+            }
+        })
+
+    return jsonify(result), 200
+
+ # delete booking (only student who created it)
+@routes_bp.route("/bookings/<int:id>", methods=["DELETE"])
+@jwt_required()
+def delete_booking(id):
+    user_id = get_jwt_identity()
+
+    booking = Booking.query.get(id)
+
+    if not booking:
+        return jsonify({"error": "Booking not found"}), 404
+
+    # only the student who created the booking can delete it
+    if booking.student_id != int(user_id):
+        return jsonify({"error": "Not authorized"}), 403
+
+    db.session.delete(booking)
+    db.session.commit()
+
+    return jsonify({"message": "Booking deleted"}), 200
+
+# update booking (only owner)
+@routes_bp.route("/bookings/<int:id>", methods=["PATCH"])
+@jwt_required()
+def update_booking(id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    booking = Booking.query.get(id)
+
+    if not booking:
+        return jsonify({"error": "Booking not found"}), 404
+
+    if booking.student_id != int(user_id):
+        return jsonify({"error": "Not authorized"}), 403
+
+    if "lesson_date" in data:
+        booking.lesson_date = data["lesson_date"]
+
+    if "status" in data:
+        booking.status = data["status"]
+
+    db.session.commit()
+
+    return jsonify({"message": "Booking updated"}), 200
