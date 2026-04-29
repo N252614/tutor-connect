@@ -32,6 +32,7 @@ def create_tutor_profile():
 
     return jsonify({"message": "Tutor profile created"}), 201
 
+
 # get all tutor profiles
 @routes_bp.route("/tutors", methods=["GET"])
 def get_tutors():
@@ -54,6 +55,7 @@ def get_tutors():
 
     return jsonify(result), 200
 
+
 # delete tutor profile (only owner can delete)
 @routes_bp.route("/tutor-profile/<int:id>", methods=["DELETE"])
 @jwt_required()
@@ -73,6 +75,7 @@ def delete_tutor_profile(id):
     db.session.commit()
 
     return jsonify({"message": "Profile deleted"}), 200
+
 
 # update tutor profile (only owner can update)
 @routes_bp.route("/tutor-profile/<int:id>", methods=["PATCH"])
@@ -105,7 +108,6 @@ def update_tutor_profile(id):
 
     db.session.commit()
 
-    # return updated tutor profile
     return jsonify({
         "message": "Tutor profile updated",
         "profile": {
@@ -116,6 +118,7 @@ def update_tutor_profile(id):
             "bio": profile.bio
         }
     }), 200
+
 
 # create booking (only students)
 @routes_bp.route("/bookings", methods=["POST"])
@@ -146,6 +149,7 @@ def create_booking():
 
     return jsonify({"message": "Booking created"}), 201
 
+
 # get bookings for current user (student)
 @routes_bp.route("/bookings", methods=["GET"])
 @jwt_required()
@@ -162,7 +166,11 @@ def get_bookings():
             "id": booking.id,
             "lesson_date": booking.lesson_date,
             "status": booking.status,
-            "tutor_id": booking.tutor_id
+            "tutor": {
+                "id": booking.tutor.id,
+                "subject": booking.tutor.subject,
+                "location": booking.tutor.location
+            }
         })
 
     return jsonify(result), 200
