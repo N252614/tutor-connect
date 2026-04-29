@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, TutorProfile, User
+from models import db, TutorProfile, User, Booking
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # create blueprint for main routes
@@ -116,3 +116,53 @@ def update_tutor_profile(id):
             "bio": profile.bio
         }
     }), 200
+
+# create booking (only students)
+@routes_bp.route("/bookings", methods=["POST"])
+@jwt_required()
+def create_booking():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    user = User.query.get(int(user_id))
+
+    # only students can create bookings
+    if not user or user.role != "student":
+        return jsonify({"error": "Only students can create bookings"}), 403
+
+    tutor_profile = TutorProfile.query.get(data.get("tutor_id"))
+
+    if not tutor_profile:
+        return jsonify({"error": "Tutor not found"}), 404
+
+    booking = Booking(
+        lesson_date=data.get("lesson_date"),
+        student_id=user.id,
+        tutor_id=tutor_profile.id
+    )
+
+    db.session.add(booking)
+    db.session.commit()
+
+    return jsonify({"message": "Booking created"}), 201
+
+# get bookings for current user (student)
+@routes_bp.route("/bookings", methods=["GET"])
+@jwt_required()
+def get_bookings():
+    user_id = get_jwt_identity()
+
+    # get all bookings for this student
+    bookings = Booking.query.filter_by(student_id=int(user_id)).all()
+
+    result = []
+
+    for booking in bookings:
+        result.append({
+            "id": booking.id,
+            "lesson_date": booking.lesson_date,
+            "status": booking.status,
+            "tutor_id": booking.tutor_id
+        })
+
+    return jsonify(result), 200
