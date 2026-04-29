@@ -194,3 +194,28 @@ def delete_booking(id):
     db.session.commit()
 
     return jsonify({"message": "Booking deleted"}), 200
+
+# update booking (only owner)
+@routes_bp.route("/bookings/<int:id>", methods=["PATCH"])
+@jwt_required()
+def update_booking(id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    booking = Booking.query.get(id)
+
+    if not booking:
+        return jsonify({"error": "Booking not found"}), 404
+
+    if booking.student_id != int(user_id):
+        return jsonify({"error": "Not authorized"}), 403
+
+    if "lesson_date" in data:
+        booking.lesson_date = data["lesson_date"]
+
+    if "status" in data:
+        booking.status = data["status"]
+
+    db.session.commit()
+
+    return jsonify({"message": "Booking updated"}), 200
