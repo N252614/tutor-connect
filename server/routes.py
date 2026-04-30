@@ -148,18 +148,18 @@ def create_booking():
     db.session.commit()
 
     return jsonify({
-    "message": "Booking created",
-    "booking": {
-        "id": booking.id,
-        "lesson_date": booking.lesson_date,
-        "status": booking.status,
-        "tutor": {
-            "id": booking.tutor.id,
-            "subject": booking.tutor.subject,
-            "location": booking.tutor.location
+        "message": "Booking created",
+        "booking": {
+            "id": booking.id,
+            "lesson_date": booking.lesson_date,
+            "status": booking.status,
+            "tutor": {
+                "id": booking.tutor.id,
+                "subject": booking.tutor.subject,
+                "location": booking.tutor.location
+            }
         }
-    }
-}), 201
+    }), 201
 
 
 # get bookings for current user (student)
@@ -188,7 +188,7 @@ def get_bookings():
     return jsonify(result), 200
 
 
- # delete booking (only student who created it)
+# delete booking (only student who created it)
 @routes_bp.route("/bookings/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_booking(id):
@@ -233,18 +233,18 @@ def update_booking(id):
     db.session.commit()
 
     return jsonify({
-    "message": "Booking updated",
-    "booking": {
-        "id": booking.id,
-        "lesson_date": booking.lesson_date,
-        "status": booking.status,
-        "tutor": {
-            "id": booking.tutor.id,
-            "subject": booking.tutor.subject,
-            "location": booking.tutor.location
+        "message": "Booking updated",
+        "booking": {
+            "id": booking.id,
+            "lesson_date": booking.lesson_date,
+            "status": booking.status,
+            "tutor": {
+                "id": booking.tutor.id,
+                "subject": booking.tutor.subject,
+                "location": booking.tutor.location
+            }
         }
-    }
-}), 200
+    }), 200
 
 
 # get bookings for current tutor
