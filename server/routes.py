@@ -56,7 +56,19 @@ def get_tutors():
             "tutor": {
                 "id": profile.user.id,
                 "username": profile.user.username
-            }
+            },
+            "reviews": [
+                {
+                    "id": review.id,
+                    "reting": review.rating,
+                    "comment": review.comment,
+                    "student": {
+                        "id": review.student.id,
+                        "username": review.student.username
+                    }
+                }
+                for review in profile.reviews
+            ]
         })
 
     return jsonify(result), 200
