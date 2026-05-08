@@ -60,7 +60,7 @@ def get_tutors():
             "reviews": [
                 {
                     "id": review.id,
-                    "reting": review.rating,
+                    "rating": review.rating,
                     "comment": review.comment,
                     "student": {
                         "id": review.student.id,

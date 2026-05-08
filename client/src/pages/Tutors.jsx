@@ -446,7 +446,7 @@ function Tutors() {
                                         paddingTop: "5px",
                                     }}
                                 >
-                                    {"⭐".repeat(Number(review.rating))}
+                                    <p>Rating: {"⭐".repeat(parseInt(review.rating || 0))}</p>
                                     <br />
                                     {review.comment}
                                     <br />
