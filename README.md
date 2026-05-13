@@ -18,7 +18,7 @@ The project includes user authentication, tutor profile creation, tutor search f
 ### Tutor Features
 - Create tutor profiles
 - View tutor cards
-- Add reviews
+- Manage tutor profile information
 - Search tutors by subject
 - Delete tutor profiles
 
@@ -26,6 +26,8 @@ The project includes user authentication, tutor profile creation, tutor search f
 - Browse tutors
 - Search tutors
 - View tutor reviews
+- Add reviews
+- Backend booking API endpoints
 
 ### Testing
 - Frontend testing with Vitest and React Testing Library
@@ -86,6 +88,7 @@ tutor-connect/
 │   ├── auth.py
 │   ├── config.py
 │   ├── models.py
+│   ├── requirements.txt
 │   └── routes.py
 │
 ├── screenshots/
@@ -211,21 +214,36 @@ npx vitest
 ### Authentication
 - POST /auth/register
 - POST /auth/login
+- GET /auth/me
 
-### Tutors
+### Tutor Profiles
 - GET /api/tutors
-- POST /api/tutors
-- DELETE /api/tutors/<id>
+- POST /api/tutor-profile
+- PATCH /api/tutor-profile/<id>
+- DELETE /api/tutor-profile/<id>
 
 ### Reviews
 - POST /api/reviews
+
+### Bookings
+- GET /api/bookings
+- POST /api/bookings
+- PATCH /api/bookings/<id>
+- DELETE /api/bookings/<id>
+
+---
+
+## Current Limitations
+
+- Booking endpoints are implemented on the backend, but the frontend booking interface is not finished yet.
+- The backend supports PATCH requests for profiles, reviews, and bookings, but the frontend edit interface is not fully implemented yet.
 
 ---
 
 ## Future Improvements
 - Deployment with Render
 - Profile image uploads
-- Booking system
+- Complete frontend booking interface for students
 - Messaging between students and tutors
 - Better mobile responsiveness
 - Pagination for tutor search

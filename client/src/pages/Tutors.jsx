@@ -23,10 +23,7 @@ function Tutors() {
     });
 
     // State for review form
-    const [reviewData, setReviewData] = useState({
-        rating: "",
-        comment: "",
-    });
+    const [reviewDataByTutor, setReviewDataByTutor] = useState({});
 
     // State for search input
     const [searchTerm, setSearchTerm] = useState("");
@@ -35,8 +32,6 @@ function Tutors() {
     async function loadTutors() {
         try {
             const data = await getTutors();
-
-            console.log("TUTORS RESPONSE:", data);
 
             if (data.error) {
                 setMessage(data.error);
@@ -75,8 +70,6 @@ function Tutors() {
         try {
             const data = await createTutor(newTutor);
 
-            console.log("CREATE TUTOR RESPONSE:", data);
-
             if (data.error) {
                 setMessage(data.error);
             } else {
@@ -102,8 +95,6 @@ function Tutors() {
         try {
             const data = await deleteTutor(id);
 
-            console.log("DELETE RESPONSE:", data);
-
             if (data.error) {
                 setMessage(data.error);
             } else {
@@ -122,21 +113,22 @@ function Tutors() {
 
         try {
             const data = await createReview({
-                rating: Number(reviewData.rating),
-                comment: reviewData.comment,
+                rating: Number(reviewDataByTutor[tutorId]?.rating || 0),
+                comment: reviewDataByTutor[tutorId]?.comment || "",
                 tutor_id: tutorId,
             });
-
-            console.log("REVIEW RESPONSE:", data);
 
             if (data.error) {
                 setMessage(data.error);
             } else {
                 setMessage("Review added!");
 
-                setReviewData({
-                    rating: "",
-                    comment: "",
+                setReviewDataByTutor({
+                    ...reviewDataByTutor,
+                    [tutorId]: {
+                        rating: "",
+                        comment: "",
+                    },
                 });
 
                 loadTutors();
@@ -247,7 +239,6 @@ function Tutors() {
                         }}
                     />
 
-
                     <input
                         name="location"
                         placeholder="Location"
@@ -263,7 +254,6 @@ function Tutors() {
                             backgroundColor: "#e8f0fe",
                         }}
                     />
-
 
                     <input
                         name="hourly_rate"
@@ -281,7 +271,6 @@ function Tutors() {
                         }}
                     />
 
-
                     <input
                         name="bio"
                         placeholder="Bio"
@@ -297,7 +286,6 @@ function Tutors() {
                             backgroundColor: "#e8f0fe",
                         }}
                     />
-
 
                     <button
                         type="submit"
@@ -375,7 +363,16 @@ function Tutors() {
                         <form onSubmit={(e) => handleReviewSubmit(e, tutor.id)}>
                             <input
                                 placeholder="Rating (1-5)"
-                                value={reviewData.rating}
+                                value={reviewDataByTutor[tutor.id]?.rating || ""}
+                                onChange={(e) =>
+                                    setReviewDataByTutor({
+                                        ...reviewDataByTutor,
+                                        [tutor.id]: {
+                                            ...reviewDataByTutor[tutor.id],
+                                            rating: e.target.value,
+                                        },
+                                    })
+                                }
                                 style={{
                                     width: "100%",
                                     padding: "8px",
@@ -385,17 +382,20 @@ function Tutors() {
                                     boxSizing: "border-box",
                                     backgroundColor: "#e8f0fe",
                                 }}
-                                onChange={(e) =>
-                                    setReviewData({
-                                        ...reviewData,
-                                        rating: e.target.value,
-                                    })
-                                }
                             />
 
                             <input
                                 placeholder="Comment"
-                                value={reviewData.comment}
+                                value={reviewDataByTutor[tutor.id]?.comment || ""}
+                                onChange={(e) =>
+                                    setReviewDataByTutor({
+                                        ...reviewDataByTutor,
+                                        [tutor.id]: {
+                                            ...reviewDataByTutor[tutor.id],
+                                            comment: e.target.value,
+                                        },
+                                    })
+                                }
                                 style={{
                                     width: "100%",
                                     padding: "8px",
@@ -405,12 +405,6 @@ function Tutors() {
                                     boxSizing: "border-box",
                                     backgroundColor: "#e8f0fe",
                                 }}
-                                onChange={(e) =>
-                                    setReviewData({
-                                        ...reviewData,
-                                        comment: e.target.value,
-                                    })
-                                }
                             />
 
                             <button

@@ -27,14 +27,9 @@ function Register() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        // Log form data for debugging
-        console.log("REGISTER FORM DATA:", formData);
-
         try {
             // Send request to backend
             const data = await registerUser(formData);
-
-            console.log("REGISTER RESPONSE:", data);
 
             // If backend returns error, show it
             if (data.error) {

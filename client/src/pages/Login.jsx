@@ -33,8 +33,6 @@ function Login() {
             // Send login request to backend
             const data = await loginUser(formData);
 
-            console.log("LOGIN RESPONSE:", data);
-
             // If login successful, save token and user data
             if (data.token) {
                 localStorage.setItem("token", data.token);

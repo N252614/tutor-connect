@@ -10,22 +10,34 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 # register new user
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
 
     # get data from request
-    username = data.get("username")
-    email = data.get("email")
-    password = data.get("password")
+    username = data.get("username", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
     role = data.get("role", "student")
 
     # check required fields
     if not username or not email or not password:
         return jsonify({"error": "Username, email, and password are required"}), 400
+    
+    # basic email validation
+    if "@" not in email or "." not in email:
+        return jsonify({"error": "Please enter a valid email address"}), 400
+    
+    # check password length
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters long"}), 400
+    
+    # check valid role
+    if role not in ["student", "tutor"]:
+        return jsonify({"error": "Role must be either student or tutor"}), 400
 
     # check if email already exists
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
-        return jsonify({"error": "User already exists"}), 400
+        return jsonify({"error": "Email is already registered"}), 400
 
     # hash password before saving
     hashed_password = generate_password_hash(password)
@@ -47,10 +59,13 @@ def register():
 # login user
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
 
-    email = data.get("email")
-    password = data.get("password")
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
 
     # find user by email
     user = User.query.filter_by(email=email).first()
